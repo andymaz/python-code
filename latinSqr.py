@@ -1,58 +1,60 @@
-class Latin:
+class MagicSquare:
     """
-    Generate and check 3×3 Latin-like squares where all rows, columns,
-    and diagonals sum to the same value (a "magic square"-style constraint).
+    Generate and verify n×n magic squares using backtracking.
+    A magic square has all rows, columns, and diagonals summing to the same value.
     """
 
-    def __init__(self, size: int):
-        self.size = size ** 2
-        self.board = [0] * self.size  # Flattened 3×3 grid as a list
+    def __init__(self, n: int):
+        self.n = n
+        self.size = n * n
+        self.board = [0] * self.size
 
     def __str__(self):
         """Return a formatted string representation of the board."""
         output = ""
         for i, val in enumerate(self.board):
-            if i % 3 == 0:
+            if i % self.n == 0:
                 output += "\n"
-            output += f"  {val}"
+            output += f"{val:4}"
         return output
 
     def solved(self) -> bool:
-        """
-        Check whether the current 3×3 board satisfies the magic square condition:
-        all rows, columns, and both diagonals have equal sums.
-        """
+        """Check if the current board satisfies the magic square condition."""
         b = self.board
-        target = b[0] + b[1] + b[2]
-        return (
-            b[3] + b[4] + b[5] == target and
-            b[6] + b[7] + b[8] == target and
-            b[0] + b[3] + b[6] == target and
-            b[1] + b[4] + b[7] == target and
-            b[2] + b[5] + b[8] == target and
-            b[0] + b[4] + b[8] == target and
-            b[2] + b[4] + b[6] == target
-        )
+        n = self.n
+
+        # Compute all row sums
+        rows = [sum(b[i * n:(i + 1) * n]) for i in range(n)]
+        # Compute all column sums
+        cols = [sum(b[i::n]) for i in range(n)]
+        # Compute diagonals
+        diag1 = sum(b[i * (n + 1)] for i in range(n))
+        diag2 = sum(b[(i + 1) * (n - 1)] for i in range(n))
+
+        # Check if all sums are equal
+        all_sums = rows + cols + [diag1, diag2]
+        return len(set(all_sums)) == 1
 
     def to_be_placed(self):
-        """Return a list of numbers (1–9) not yet placed on the board."""
-        return [x for x in range(1, 10) if x not in self.board]
+        """Return numbers that have not yet been placed on the board."""
+        return [x for x in range(1, self.size + 1) if x not in self.board]
 
-    def latin_square(self, n: int):
+    def generate(self, pos: int = 0):
         """
-        Recursively fill the 3×3 grid with numbers 1–9 and print
-        each configuration that satisfies the 'solved' condition.
+        Recursively fill the grid with numbers and print
+        configurations that form valid magic squares.
         """
-        if n < self.size:
+        if pos < self.size:
             for x in self.to_be_placed():
-                self.board[n] = x
-                self.latin_square(n + 1)
-                # When full board is filled, check if solved
-                if n + 1 == self.size and self.solved():
+                self.board[pos] = x
+                self.generate(pos + 1)
+                # When full board is filled, check if it's a magic square
+                if pos + 1 == self.size and self.solved():
                     print(self)
-                self.board[n] = 0  # Backtrack
+                self.board[pos] = 0  # Backtrack
 
 
 if __name__ == "__main__":
-    latin = Latin(3)
-    latin.latin_square(0)
+    n = 3  # You can change this to 4, 5, etc.
+    ms = MagicSquare(n)
+    ms.generate(0)
