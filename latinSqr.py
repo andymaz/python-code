@@ -1,60 +1,70 @@
-class MagicSquare:
+class LatinSqrSolution:
     """
-    Generate and verify n×n magic squares using backtracking.
-    A magic square has all rows, columns, and diagonals summing to the same value.
+    Exhaustively generates all 3×3 magic squares using backtracking.
+    Each row, column, and diagonal must sum to the same constant (15).
     """
 
-    def __init__(self, n: int):
-        self.n = n
-        self.size = n * n
+    def __init__(self, size: int = 3):
+        # Only designed for 3×3, but size is kept for flexibility
+        self.size = size ** 2
         self.board = [0] * self.size
 
-    def __str__(self):
-        """Return a formatted string representation of the board."""
-        output = ""
-        for i, val in enumerate(self.board):
-            if i % self.n == 0:
-                output += "\n"
-            output += f"{val:4}"
-        return output
+    def __str__(self) -> str:
+        """Pretty-print the current 3×3 board."""
+        out = ""
+        for i in range(self.size):
+            if i % 3 == 0:
+                out += "\n"
+            out += f"{self.board[i]:>3}"
+        return out
 
-    def solved(self) -> bool:
-        """Check if the current board satisfies the magic square condition."""
-        b = self.board
-        n = self.n
-
-        # Compute all row sums
-        rows = [sum(b[i * n:(i + 1) * n]) for i in range(n)]
-        # Compute all column sums
-        cols = [sum(b[i::n]) for i in range(n)]
-        # Compute diagonals
-        diag1 = sum(b[i * (n + 1)] for i in range(n))
-        diag2 = sum(b[(i + 1) * (n - 1)] for i in range(n))
-
-        # Check if all sums are equal
-        all_sums = rows + cols + [diag1, diag2]
-        return len(set(all_sums)) == 1
+    # ───────────────────────────────────────────────────────────────
+    # Utility methods
+    # ───────────────────────────────────────────────────────────────
 
     def to_be_placed(self):
-        """Return numbers that have not yet been placed on the board."""
-        return [x for x in range(1, self.size + 1) if x not in self.board]
+        """Return a list of numbers not yet placed."""
+        return [x for x in range(1, 10) if x not in self.board]
 
-    def generate(self, pos: int = 0):
-        """
-        Recursively fill the grid with numbers and print
-        configurations that form valid magic squares.
-        """
-        if pos < self.size:
+    def solved(self) -> bool:
+        """Check whether the current board forms a 3×3 magic square."""
+        b = self.board
+        target = b[0] + b[1] + b[2]
+
+        rows = [
+            b[3] + b[4] + b[5],
+            b[6] + b[7] + b[8],
+        ]
+        cols = [
+            b[0] + b[3] + b[6],
+            b[1] + b[4] + b[7],
+            b[2] + b[5] + b[8],
+        ]
+        diags = [
+            b[0] + b[4] + b[8],
+            b[2] + b[4] + b[6],
+        ]
+
+        return all(s == target for s in rows + cols + diags)
+
+    # ───────────────────────────────────────────────────────────────
+    # Backtracking solver
+    # ───────────────────────────────────────────────────────────────
+
+    def latin_square(self, n: int = 0):
+        """Recursive backtracking to generate magic squares."""
+        if n < self.size:
             for x in self.to_be_placed():
-                self.board[pos] = x
-                self.generate(pos + 1)
-                # When full board is filled, check if it's a magic square
-                if pos + 1 == self.size and self.solved():
+                self.board[n] = x
+                self.latin_square(n + 1)
+                if n + 1 == self.size and self.solved():
                     print(self)
-                self.board[pos] = 0  # Backtrack
+                self.board[n] = 0  # backtrack
 
+# ───────────────────────────────────────────────────────────────
+# Main entry point
+# ───────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    n = 3  # You can change this to 4, 5, etc.
-    ms = MagicSquare(n)
-    ms.generate(0)
+    s = LatinSqrSolution(3)
+    s.latin_square(0)
